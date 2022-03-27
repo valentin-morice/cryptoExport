@@ -1,4 +1,4 @@
-const { RESTClient } = require("cw-sdk-node");
+import { RESTClient } from 'cw-sdk-node';
 const client = new RESTClient({
   creds: {
     apiKey: ""
@@ -11,6 +11,6 @@ async function getExchanges() {
   return response.results;
 }
 
-module.exports = {
+export {
   getExchanges
 }
