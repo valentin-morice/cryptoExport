@@ -1,0 +1,1 @@
+/* Initial database configuration file */
