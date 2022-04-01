@@ -12,14 +12,15 @@ const rl = readline.createInterface({
 });
 
 const sleep = (ms = 1000) => new Promise((r) => setTimeout(r, ms));
-const doubleSleep = (ms = 1500) => new Promise((r) => setTimeout(r, ms));
 
-async function welcome() {
+async function start() {
   const rainbowTitle = chalkAnimation.rainbow("CLI Masters \n");
   await sleep();
   rainbowTitle.stop();
 
-  figlet(`Crypto Data Export`, { font: "3-D" }, (err, data) => {
+  figlet(`Crypto Data Export`, {
+    font: "3-D"
+  }, (err, data) => {
     console.log(gradient.pastel.multiline(data) + "\n");
 
     console.log(
@@ -36,6 +37,14 @@ async function welcome() {
         Qui galisum dolores ut molestias sint et temporibus necessitatibus!
       `);
   });
+
+  // Check if user is registered, if not, register user
+  if (fs.existsSync("./controller/config.json")) {
+    await sleep(2000);
+    console.log("Already registered");
+  } else {
+    await questionAPI();
+  }
 }
 
 // Asks API key & writes it to config.json
@@ -54,4 +63,6 @@ async function questionAPI() {
   });
 }
 
-export { welcome, questionAPI, doubleSleep };
+export {
+  start
+};
