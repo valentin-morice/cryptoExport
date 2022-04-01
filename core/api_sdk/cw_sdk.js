@@ -1,8 +1,7 @@
 import { RESTClient } from "cw-sdk-node";
 import { readFile } from "fs/promises";
-
 const userData = JSON.parse(
-  await readFile(new URL("../../controller/config.json", import.meta.url))
+  await readFile(new URL("./../../config.json", import.meta.url))
 );
 
 const client = new RESTClient({
