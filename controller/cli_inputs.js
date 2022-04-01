@@ -12,6 +12,7 @@ const rl = readline.createInterface({
 });
 
 const sleep = (ms = 1000) => new Promise((r) => setTimeout(r, ms));
+const doubleSleep = (ms = 1500) => new Promise((r) => setTimeout(r, ms));
 
 async function welcome() {
   const rainbowTitle = chalkAnimation.rainbow("CLI Masters \n");
@@ -34,13 +35,12 @@ async function welcome() {
         Id assumenda rerum est tempore nulla est sunt temporibus ut quia veniam id ipsam fugit quo velit corporis qui voluptatem sint. 
         Qui galisum dolores ut molestias sint et temporibus necessitatibus!
       `);
-    return;
   });
-  return;
 }
 
 // Asks API key & writes it to config.json
-function questionAPI() {
+async function questionAPI() {
+  await doubleSleep();
   rl.question("Please enter your CryptoWatch API key: ", function (apiKey) {
     const client = {
       apiKey: apiKey,
@@ -54,4 +54,4 @@ function questionAPI() {
   });
 }
 
-export { welcome, questionAPI };
+export { welcome, questionAPI, doubleSleep };
