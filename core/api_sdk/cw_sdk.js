@@ -1,16 +1,22 @@
-import { RESTClient } from 'cw-sdk-node';
+import { RESTClient } from "cw-sdk-node";
+import { readFile } from "fs/promises";
+
+const userData = JSON.parse(
+  await readFile(new URL("../../controller/config.json", import.meta.url))
+);
+
 const client = new RESTClient({
   creds: {
-    apiKey: ""
-  }
+    apiKey: userData.apiKey,
+  },
 });
 
 // All requests return promises that return the formatted API data.
 async function getExchanges() {
   const response = await client.getExchanges();
-  return response.results;
+  return response;
 }
 
-export {
-  getExchanges
-}
+console.log(await getExchanges());
+
+export { getExchanges };

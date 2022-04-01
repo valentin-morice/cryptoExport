@@ -3,3 +3,5 @@ node_modules
 package-lock.json
 .env
 DS-STORE
+credentials.js
+config.json
