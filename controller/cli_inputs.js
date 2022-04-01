@@ -39,12 +39,11 @@ async function welcome() {
   return;
 }
 
-// Asks API & writes RESTClient to config.json
+// Asks API key & writes it to config.json
 function questionAPI() {
   rl.question("Please enter your CryptoWatch API key: ", function (apiKey) {
     const client = {
       apiKey: apiKey,
-      apiRoute: "https://api.cryptowat.ch",
     };
 
     const data = JSON.stringify(client);
