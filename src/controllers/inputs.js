@@ -23,41 +23,44 @@ async function initialSetup() {
       text: 'No "config.json" file found.',
     });
 
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    const apiKeyInputHandler = () => {
-      rl.question("Please enter your CryptoWatch API key: ", (apiKey) => {
-        if (typeof apiKey !== "string") {
-          console.error("Invalid API Key.");
-          console.info("Please try again.");
-          apiKeyInputHandler();
-        }
-
-        // Creating new config.json file in root folder.
-        const config = {
-          apiKeys: {
-            cryptoWatch: apiKey,
+    const apiKeyInputHandler = async () => {
+      let apiKey;
+      const question = inquirer
+        .prompt([
+          {
+            name: "apiKey",
+            type: "input",
+            message: "Please enter your CryptoWatch API key: ",
           },
-        };
-
-        fs.writeFile(
-          "./config.json",
-          JSON.stringify(config, null, 2),
-          (err) => {
-            if (err) throw new Error("Something went wrong! Error: ", err);
-            console.log("API key saved");
+        ])
+        .then(function (response) {
+          if (typeof response.apiKey !== "string") {
+            console.error("Invalid API Key.");
+            console.info("Please try again.");
           }
-        );
+          apiKey = response.apiKey;
+        });
+
+      await question;
+
+      // Creating new config.json file in root folder.
+      const config = {
+        apiKeys: {
+          cryptoWatch: apiKey,
+        },
+      };
+
+      fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
+        if (err) throw new Error("Something went wrong! Error: ", err);
+        console.log("  API key saved");
       });
     };
 
-    apiKeyInputHandler();
+    await apiKeyInputHandler();
   } else if (configExists) {
     // TODO next step - The app should prompt the user with the next steps
     spinner.success({ text: "Found API key" });
+    return;
   }
 }
 
@@ -87,12 +90,12 @@ async function start() {
       `);
     }
   );
-  initialSetup();
-  setParams(); // < Messes up timeline
+  setParams();
 }
 
 async function setParams() {
-  await sleep(3000);
+  await initialSetup();
+  await sleep(1000);
   inquirer
     .prompt([
       {
