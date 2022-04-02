@@ -1,3 +1,3 @@
-import { start } from "./controller/cli_inputs.js";
+import { start } from './src/controllers/inputs.js';
 
 await start();

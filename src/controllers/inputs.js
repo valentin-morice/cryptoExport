@@ -73,8 +73,7 @@ async function initialSetup() {
         fs.writeFile('./config.json', JSON.stringify(config, null, 2), (err) => {
           if (err) throw new Error('Something went wrong! Error: ', err);
           console.log('API key saved');
-
-          process.exit(1) // TODO next step - The app should not exit after api key saved
+          
         });
       });
     }
