@@ -37,6 +37,7 @@ async function initialSetup() {
           if (typeof response.apiKey !== "string") {
             console.error("Invalid API Key.");
             console.info("Please try again.");
+            apiKeyInputHandler();
           }
           apiKey = response.apiKey;
         });
