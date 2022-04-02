@@ -5,9 +5,9 @@ import figlet from "figlet";
 import gradient from "gradient-string";
 import chalkAnimation from "chalk-animation";
 import { createSpinner } from "nanospinner";
-import readline from "readline";
 import fs from "fs";
 import inquirer from "inquirer";
+import getExchanges from "../core/api_sdk/cw_sdk.js";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 const configExists = fs.existsSync("./config.json");
@@ -97,12 +97,13 @@ async function start() {
 async function setParams() {
   await initialSetup();
   await sleep(1000);
+  const exchanges = await getExchanges();
   inquirer
     .prompt([
       {
         type: "list",
         message: "Please choose an exchange",
-        choices: ["kraken", "bitfinex"],
+        choices: exchanges,
         name: "exchanges",
       },
     ])
