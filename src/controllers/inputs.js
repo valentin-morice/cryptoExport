@@ -7,7 +7,7 @@ import chalkAnimation from "chalk-animation";
 import { createSpinner } from "nanospinner";
 import fs from "fs";
 import inquirer from "inquirer";
-import getExchanges from "../core/api_sdk/cw_sdk.js";
+import exportConf from "../core/api_sdk/cw_sdk.js";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 const configExists = fs.existsSync("./config.json");
@@ -97,7 +97,8 @@ async function start() {
 async function setParams() {
   await initialSetup();
   await sleep(1000);
-  const exchanges = await getExchanges();
+  const exchanges = await exportConf();
+  console.log(exchanges);
   inquirer
     .prompt([
       {
