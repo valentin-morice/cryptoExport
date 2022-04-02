@@ -16,6 +16,7 @@ const configExists = fs.existsSync("./config.json");
 // Initial user application setup
 async function initialSetup() {
   // Check if user has saved API and/or DB information.
+  await sleep(500);
   const spinner = createSpinner("Checking config.json...").start();
   await sleep();
 
