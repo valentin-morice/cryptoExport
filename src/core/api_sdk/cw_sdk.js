@@ -33,4 +33,17 @@ async function getCoins() {
   return coinsArr;
 }
 
-export { getExchanges, getCoins };
+async function getData(param, param1, param2) {
+  const config = JSON.parse(
+    await readFile(new URL("../../../config.json", import.meta.url))
+  );
+  const client = new RESTClient({
+    creds: {
+      apiKey: config.apiKeys.cryptoWatch,
+    },
+  });
+  const data = await client.getOHLC(param, param1, param2);
+  return data;
+}
+
+export { getExchanges, getCoins, getData };
