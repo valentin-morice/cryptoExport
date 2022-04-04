@@ -71,7 +71,7 @@ async function start() {
   figlet(
     "Crypto Export API",
     {
-      font: "The Edge",
+      font: "Banner",
     },
     (err, data) => {
       if (err) throw new Error(err);
@@ -83,11 +83,12 @@ async function start() {
         })
       );
       console.log(`
-        ${chalk.green("Welcome!")} 
-      This small application is made by the swaggest swaggers in the whole World Wide Web 2.0 (Soon to be 3.0, hide your daughters).
+${chalk.green("Welcome!")} 
+This small application is made by the swaggest swaggers in the whole World Wide Web 2.0
+(Soon to be 3.0, hide your daughters).
 
-      You can do lots of stuff like exporting crypto data into excel and many more (not really).
-      Let's start! :)
+You can do lots of stuff like exporting crypto data into excel and many more (not really).
+Let's start! :)
       `);
     }
   );
