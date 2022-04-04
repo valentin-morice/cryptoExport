@@ -1,5 +1,8 @@
 import { RESTClient } from "cw-sdk-node";
 import { readFile } from "fs/promises";
+import CoinGecko from "coingecko-api";
+
+const coingeckoClient = new CoinGecko();
 
 async function getExchanges() {
   const config = JSON.parse(
@@ -18,4 +21,16 @@ async function getExchanges() {
   return exchangesArr.sort();
 }
 
-export default getExchanges;
+async function getCoins() {
+  let coinsArr = [];
+  const coins = await coingeckoClient.coins.markets({
+    order: CoinGecko.ORDER.MARKET_CAP_DESC,
+    per_page: 10,
+  });
+  for (let i = 0; i < 10; i++) {
+    coinsArr.push(coins.data[i].symbol);
+  }
+  return coinsArr;
+}
+
+export { getExchanges, getCoins };

@@ -3,12 +3,10 @@ import chalk from "chalk";
 import boxen from "boxen";
 import figlet from "figlet";
 import gradient from "gradient-string";
-import chalkAnimation from "chalk-animation";
 import { createSpinner } from "nanospinner";
 import fs from "fs";
 import inquirer from "inquirer";
-import exportConf from "../core/api_sdk/cw_sdk.js";
-import getExchanges from "../core/api_sdk/cw_sdk.js";
+import { getCoins, getExchanges } from "../core/api_sdk/cw_sdk.js";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 const configExists = fs.existsSync("./config.json");
@@ -27,24 +25,26 @@ async function initialSetup() {
 
     const apiKeyInputHandler = async () => {
       let apiKey;
-      const question = inquirer
-        .prompt([
-          {
-            name: "apiKey",
-            type: "input",
-            message: "Please enter your CryptoWatch API key: ",
-          },
-        ])
-        .then(function (response) {
-          if (typeof response.apiKey !== "string") {
-            console.error("Invalid API Key.");
-            console.info("Please try again.");
-            apiKeyInputHandler();
-          }
-          apiKey = response.apiKey;
-        });
+      async function question() {
+        await inquirer
+          .prompt([
+            {
+              name: "apiKey",
+              type: "input",
+              message: "Please enter your CryptoWatch API key: ",
+            },
+          ])
+          .then(function (response) {
+            if (typeof response.apiKey !== "string") {
+              console.error("Invalid API Key.");
+              console.info("Please try again.");
+              apiKeyInputHandler();
+            }
+            apiKey = response.apiKey;
+          });
+      }
 
-      await question;
+      await question();
 
       // Creating new config.json file in root folder.
       const config = {
@@ -61,9 +61,7 @@ async function initialSetup() {
 
     await apiKeyInputHandler();
   } else if (configExists) {
-    // TODO next step - The app should prompt the user with the next steps
     spinner.success({ text: "Found API key" });
-    return;
   }
 }
 
@@ -97,19 +95,46 @@ async function start() {
 }
 
 async function setParams() {
+  // Saving User Input
+  let exchange;
+  let coin;
+  // -----------------
+
+  // Calling Functions
   await initialSetup();
   await sleep(1000);
-  const exchanges = await getExchanges();
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        message: "Please choose an exchange",
-        choices: exchanges,
-        name: "exchanges",
-      },
-    ])
-    .then((response) => console.log(response));
+  await setExchange();
+  await setCoin();
+  console.log(exchange, coin);
+  // -----------------
+
+  // Functions for Building Requests
+  async function setExchange() {
+    await inquirer
+      .prompt([
+        {
+          type: "list",
+          message: "Please choose an exchange",
+          choices: await getExchanges(),
+          name: "exchanges",
+        },
+      ])
+      .then((response) => (exchange = response.exchanges));
+  }
+
+  async function setCoin() {
+    await inquirer
+      .prompt([
+        {
+          type: "list",
+          message: "Please choose a coin",
+          choices: await getCoins(),
+          name: "coins",
+        },
+      ])
+      .then((response) => (coin = response.coins));
+  }
+  // -----------------
 }
 
 export default start;
