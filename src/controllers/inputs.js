@@ -191,6 +191,7 @@ async function setParams() {
       await datePrompt("Pick a date").then((response) => {
         // Converting Date to UNIX Timestamp
         date = parseInt((new Date(response) / 1000).toFixed(0));
+        // Data Validation (Lots of duplicate, might need to wrap in a Fn)
         if (date > (new Date() / 1000).toFixed(0)) {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
@@ -219,6 +220,7 @@ async function setParams() {
       await datePrompt("Pick an opening date").then((response) => {
         // Converting Date to UNIX Timestamp
         params.before = parseInt((new Date(response) / 1000).toFixed(0));
+        // Data Validation (Lots of duplicate, might need to wrap in a Fn)
         if (params.before > (new Date() / 1000).toFixed(0)) {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
@@ -227,10 +229,10 @@ async function setParams() {
         }
       });
       await datePrompt("Pick a closing date").then((response) => {
-        // Need to add error and re-prompt if closing date < opening date
         // Converting Date to UNIX Timestamp
         params.after = parseInt((new Date(response) / 1000).toFixed(0));
       });
+      // Data Validation (Lots of duplicate, might need to wrap in a Fn)
       if (params.after > (new Date() / 1000).toFixed(0)) {
         console.log(
           "Error: Date cannot be greater than today. Please try again"
