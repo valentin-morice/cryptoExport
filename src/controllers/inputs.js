@@ -96,10 +96,6 @@ Let's start! :)
     }
   );
   // -----------------
-
-  // Setting Params for API Request
-  setParams();
-  // -----------------
 }
 
 async function setParams() {
@@ -107,8 +103,6 @@ async function setParams() {
   let exchange;
   let coin;
   let date;
-  let after;
-  let period;
   let params = {};
   let periods = new Map([
     ["1mn", 60],
@@ -126,6 +120,7 @@ async function setParams() {
     ["1w", 604800],
     ["1w, start Monday", "604800_Monday"],
   ]);
+
   // -----------------
 
   // Calling Functions
@@ -134,13 +129,11 @@ async function setParams() {
   await setExchange();
   await setCoin();
   await setDate();
-  console.log(
-    util.inspect(await getData(exchange, coin, params), {
-      showHidden: false,
-      depth: null,
-      colors: true,
-    })
-  );
+  // -----------------
+
+  // Set-Up Data for SheetJS
+  let data = await getData(exchange, coin, params);
+  let extractData = data[params.periods];
   // -----------------
 
   // Functions for Building Request
@@ -253,12 +246,13 @@ async function setParams() {
             name: "chosePeriods",
           },
         ])
-        .then(
-          (response) => (params.periods = periods.get(response.chosePeriods))
-        );
+        .then((response) => {
+          params.periods = periods.get(response.chosePeriods);
+        });
     }
   }
   // -----------------
+  return extractData;
 }
 
-export default start;
+export { start, setParams };
