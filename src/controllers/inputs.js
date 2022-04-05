@@ -191,6 +191,12 @@ async function setParams() {
       await datePrompt("Pick a date").then((response) => {
         // Converting Date to UNIX Timestamp
         date = parseInt((new Date(response) / 1000).toFixed(0));
+        if (date > (new Date() / 1000).toFixed(0)) {
+          console.log(
+            "Error: Date cannot be greater than today. Please try again"
+          );
+          process.exit(0);
+        }
       });
       if (choice === "Only before X date") {
         params.before = date;
@@ -213,12 +219,29 @@ async function setParams() {
       await datePrompt("Pick an opening date").then((response) => {
         // Converting Date to UNIX Timestamp
         params.before = parseInt((new Date(response) / 1000).toFixed(0));
+        if (params.before > (new Date() / 1000).toFixed(0)) {
+          console.log(
+            "Error: Date cannot be greater than today. Please try again"
+          );
+          process.exit(0);
+        }
       });
       await datePrompt("Pick a closing date").then((response) => {
         // Need to add error and re-prompt if closing date < opening date
         // Converting Date to UNIX Timestamp
         params.after = parseInt((new Date(response) / 1000).toFixed(0));
       });
+      if (params.after > (new Date() / 1000).toFixed(0)) {
+        console.log(
+          "Error: Date cannot be greater than today. Please try again"
+        );
+        process.exit(0);
+      } else if (params.before > params.after) {
+        console.log(
+          "Error: Closing date cannot be earlier than opening date. Please try again"
+        );
+        process.exit(0);
+      }
       await inquirer
         .prompt([
           {
