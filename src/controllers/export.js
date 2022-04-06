@@ -9,6 +9,7 @@ async function exportCSV(param) {
   fs.writeFileSync("export.csv", csv);
   await sleep();
   spinner.success({ text: "CSV Created" });
+  console.log(""); // Jump a line
 }
 
 export default exportCSV;

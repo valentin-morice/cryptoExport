@@ -9,7 +9,9 @@ import inquirer from "inquirer";
 import { getCoins, getExchanges, getData } from "../core/api_sdk/cw_sdk.js";
 import datePrompt from "date-prompt";
 
-const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
+function sleep(ms = 2000) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 const configExists = fs.existsSync("./config.json");
 
 // Initial user application setup
@@ -27,6 +29,7 @@ async function initialSetup() {
     const apiKeyInputHandler = async () => {
       let apiKey;
       async function question() {
+        console.log(""); // Jump a line
         await inquirer
           .prompt([
             {
@@ -55,6 +58,7 @@ async function initialSetup() {
       };
 
       fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
+        console.log(""); // Jump a line
         if (err) throw new Error("Something went wrong! Error: ", err);
         console.log("  API key saved");
       });
@@ -135,6 +139,7 @@ async function setParams() {
 
   // Functions for Building Request
   async function setExchange() {
+    console.log(""); // Jump a line
     await inquirer
       .prompt([
         {
@@ -148,6 +153,7 @@ async function setParams() {
   }
 
   async function setCoin() {
+    console.log(""); // Jump a line
     await inquirer
       .prompt([
         {
@@ -161,6 +167,7 @@ async function setParams() {
   }
 
   async function setDate() {
+    console.log(""); // Jump a line
     await inquirer
       .prompt([
         {
@@ -180,6 +187,7 @@ async function setParams() {
       data.choice === "Only before X date" ||
       data.choice === "Only after X date"
     ) {
+      console.log(""); // Jump a line
       await datePrompt("Pick a date").then((response) => {
         // Converting Date to UNIX Timestamp
         data.date = parseInt((new Date(response) / 1000).toFixed(0));
