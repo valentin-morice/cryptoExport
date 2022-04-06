@@ -90,6 +90,7 @@ async function start() {
       );
       console.log(`
 ${chalk.green("Welcome!")} 
+
 This small application is made by the swaggest swaggers in the whole World Wide Web 2.0
 (Soon to be 3.0, hide your daughters).
 
@@ -218,6 +219,7 @@ async function setParams() {
             (data.params.periods = data.periods.get(response.chosePeriods))
         );
     } else {
+      console.log(""); // Jump a line
       await datePrompt("Pick an opening date").then((response) => {
         // Converting Date to UNIX Timestamp
         data.params.after = parseInt((new Date(response) / 1000).toFixed(0));
@@ -258,6 +260,19 @@ async function setParams() {
           data.params.periods = data.periods.get(response.chosePeriods);
         });
     }
+    console.log("");
+    await inquirer
+      .prompt([
+        {
+          type: "list",
+          message: "Please choose a file format",
+          choices: ["xlsx", "csv"],
+          name: "format",
+        },
+      ])
+      .then((response) => {
+        data.format = response.format;
+      });
   }
   // -----------------
   return data;
