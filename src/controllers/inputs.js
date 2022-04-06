@@ -197,6 +197,7 @@ async function setParams() {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
           );
+          console.log(""); // Jump a Line
           process.exit(0);
         }
       });
@@ -228,6 +229,7 @@ async function setParams() {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
           );
+          console.log(""); // Jump a Line
           process.exit(0);
         }
       });
@@ -240,11 +242,13 @@ async function setParams() {
         console.log(
           "Error: Date cannot be greater than today. Please try again"
         );
+        console.log(""); // Jump a Line
         process.exit(0);
       } else if (data.params.before < data.params.after) {
         console.log(
           "Error: Closing date cannot be earlier than opening date. Please try again"
         );
+        console.log(""); // Jump a Line
         process.exit(0);
       }
       await inquirer
