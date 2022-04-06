@@ -3,4 +3,4 @@ import exportCSV from "./src/controllers/export.js";
 
 await start();
 const data = await setParams();
-await exportCSV(data);
+await exportCSV(data.cw[data.params.periods]);

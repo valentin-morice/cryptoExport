@@ -8,7 +8,6 @@ import fs from "fs";
 import inquirer from "inquirer";
 import { getCoins, getExchanges, getData } from "../core/api_sdk/cw_sdk.js";
 import datePrompt from "date-prompt";
-import util from "util";
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 const configExists = fs.existsSync("./config.json");
@@ -99,27 +98,26 @@ Let's start! :)
 }
 
 async function setParams() {
-  // Saving User Input
-  let exchange;
-  let coin;
-  let date;
-  let params = {};
-  let periods = new Map([
-    ["1mn", 60],
-    ["3mn", 180],
-    ["5mn", 300],
-    ["15mn", 900],
-    ["30mn", 1800],
-    ["1h", 3600],
-    ["2h", 7200],
-    ["4h", 14400],
-    ["6h", 21600],
-    ["12h", 43200],
-    ["1d", 86400],
-    ["3d", 259200],
-    ["1w", 604800],
-    ["1w, start Monday", "604800_Monday"],
-  ]);
+  // Saving User Input. Additional keys added thru Fn.
+  let data = {
+    params: {},
+    periods: new Map([
+      ["1mn", 60],
+      ["3mn", 180],
+      ["5mn", 300],
+      ["15mn", 900],
+      ["30mn", 1800],
+      ["1h", 3600],
+      ["2h", 7200],
+      ["4h", 14400],
+      ["6h", 21600],
+      ["12h", 43200],
+      ["1d", 86400],
+      ["3d", 259200],
+      ["1w", 604800],
+      ["1w, start Monday", "604800_Monday"],
+    ]),
+  };
 
   // -----------------
 
@@ -132,8 +130,7 @@ async function setParams() {
   // -----------------
 
   // Set-Up Data for SheetJS
-  let data = await getData(exchange, coin, params);
-  let extractData = data[params.periods];
+  data.cw = await getData(data.exchange, data.coin, data.params);
   // -----------------
 
   // Functions for Building Request
@@ -147,7 +144,7 @@ async function setParams() {
           name: "exchanges",
         },
       ])
-      .then((response) => (exchange = response.exchanges));
+      .then((response) => (data.exchange = response.exchanges));
   }
 
   async function setCoin() {
@@ -160,11 +157,10 @@ async function setParams() {
           name: "coins",
         },
       ])
-      .then((response) => (coin = response.coins + "usd"));
+      .then((response) => (data.coin = response.coins + "usd"));
   }
 
   async function setDate() {
-    let choice;
     await inquirer
       .prompt([
         {
@@ -178,43 +174,47 @@ async function setParams() {
           name: "OHLCoptions",
         },
       ])
-      .then((response) => (choice = response.OHLCoptions));
+      .then((response) => (data.choice = response.OHLCoptions));
 
-    if (choice === "Only before X date" || choice === "Only after X date") {
+    if (
+      data.choice === "Only before X date" ||
+      data.choice === "Only after X date"
+    ) {
       await datePrompt("Pick a date").then((response) => {
         // Converting Date to UNIX Timestamp
-        date = parseInt((new Date(response) / 1000).toFixed(0));
+        data.date = parseInt((new Date(response) / 1000).toFixed(0));
         // Data Validation (Lots of duplicate, might need to wrap in a Fn)
-        if (date > (new Date() / 1000).toFixed(0)) {
+        if (data.date > (new Date() / 1000).toFixed(0)) {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
           );
           process.exit(0);
         }
       });
-      if (choice === "Only before X date") {
-        params.before = date;
-      } else if (choice === "Only after X date") {
-        params.after = date;
+      if (data.choice === "Only before X date") {
+        data.params.before = data.date;
+      } else if (data.choice === "Only after X date") {
+        data.params.after = data.date;
       }
       await inquirer
         .prompt([
           {
             type: "list",
             message: "Please choose a date filter",
-            choices: [...periods.keys()],
+            choices: [...data.periods.keys()],
             name: "chosePeriods",
           },
         ])
         .then(
-          (response) => (params.periods = periods.get(response.chosePeriods))
+          (response) =>
+            (data.params.periods = data.periods.get(response.chosePeriods))
         );
     } else {
       await datePrompt("Pick an opening date").then((response) => {
         // Converting Date to UNIX Timestamp
-        params.before = parseInt((new Date(response) / 1000).toFixed(0));
+        data.params.after = parseInt((new Date(response) / 1000).toFixed(0));
         // Data Validation (Lots of duplicate, might need to wrap in a Fn)
-        if (params.before > (new Date() / 1000).toFixed(0)) {
+        if (data.params.after > (new Date() / 1000).toFixed(0)) {
           console.log(
             "Error: Date cannot be greater than today. Please try again"
           );
@@ -223,15 +223,15 @@ async function setParams() {
       });
       await datePrompt("Pick a closing date").then((response) => {
         // Converting Date to UNIX Timestamp
-        params.after = parseInt((new Date(response) / 1000).toFixed(0));
+        data.params.before = parseInt((new Date(response) / 1000).toFixed(0));
       });
       // Data Validation (Lots of duplicate, might need to wrap in a Fn)
-      if (params.after > (new Date() / 1000).toFixed(0)) {
+      if (data.params.before > (new Date() / 1000).toFixed(0)) {
         console.log(
           "Error: Date cannot be greater than today. Please try again"
         );
         process.exit(0);
-      } else if (params.before > params.after) {
+      } else if (data.params.before < data.params.after) {
         console.log(
           "Error: Closing date cannot be earlier than opening date. Please try again"
         );
@@ -242,17 +242,17 @@ async function setParams() {
           {
             type: "list",
             message: "Please choose a candle time frame",
-            choices: [...periods.keys()],
+            choices: [...data.periods.keys()],
             name: "chosePeriods",
           },
         ])
         .then((response) => {
-          params.periods = periods.get(response.chosePeriods);
+          data.params.periods = data.periods.get(response.chosePeriods);
         });
     }
   }
   // -----------------
-  return extractData;
+  return data;
 }
 
-export { start, setParams };
+export { start, setParams, sleep };
