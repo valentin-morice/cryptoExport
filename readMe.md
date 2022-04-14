@@ -12,7 +12,7 @@ Crypto Export is a simple CLI application that allows you to export crypto price
 
 ### How to run
 
-Simply clone this repository, _cd_ into it and run _node ._
+Simply clone this repository, _cd_ into it, run _npm install_ and then _node ._
 
 ### Created by
 
