@@ -91,11 +91,9 @@ async function start() {
       console.log(`
 ${chalk.green("Welcome!")} 
 
-This small application is made by the swaggest swaggers in the whole World Wide Web 2.0
-(Soon to be 3.0, hide your daughters).
+This small application is made Felipe Santos & aange-marcel.
 
-You can do lots of stuff like exporting crypto data into excel and many more (not really).
-Let's start! :)
+It lets you export crypto price history into a simple CSV / XLSX file. Let's get started ! :)
       `);
     }
   );
