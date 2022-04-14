@@ -91,7 +91,7 @@ async function start() {
       console.log(`
 ${chalk.green("Welcome!")} 
 
-This small application is made Felipe Santos & aange-marcel.
+This small application is made by Felipe Santos & aange-marcel.
 
 It lets you export crypto price history into a simple CSV / XLSX file. Let's get started ! :)
       `);
