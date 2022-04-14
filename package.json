@@ -23,10 +23,14 @@
     "boxen": "^6.2.1",
     "chalk": "^5.0.1",
     "chalk-animation": "^1.6.0",
+    "coingecko-api": "^1.0.10",
     "cw-sdk-node": "^1.0.0-beta.9",
+    "date-prompt": "^1.0.0",
     "figlet": "^1.5.2",
     "gradient-string": "^2.0.0",
     "inquirer": "^8.2.2",
-    "nanospinner": "^1.0.0"
+    "json-2-csv": "^3.17.0",
+    "nanospinner": "^1.0.0",
+    "xlsx": "^0.18.5"
   }
 }

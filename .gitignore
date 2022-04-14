@@ -5,3 +5,5 @@ package-lock.json
 DS-STORE
 credentials.js
 config.json
+output.csv
+output.xlsx
