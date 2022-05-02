@@ -1,4 +1,3 @@
-/* eslint-disable no-promise-executor-return */
 import fs from "fs";
 import chalk from "chalk";
 import boxen from "boxen";
@@ -8,12 +7,12 @@ import datePrompt from "date-prompt";
 import { sleep } from "../helpers/misc.js"
 import { createSpinner } from "nanospinner";
 import { exportExcel, exportCsv } from "./export.js";
-import { getCoins, getExchanges, getData } from "../core/api_sdk/cw_sdk.js";
+import { getCoins, getExchanges, getData } from "../core/sdk/cw_sdk.js";
 
 /**
- * @function welcome System's entry point.
+ * @function startProgram System's entry point. Validating if the user already has a api keychain configuration.
 */
-export async function welcome() {
+export async function startProgram() {
   console.clear();
   console.log(chalk.blackBright("Made by @aange-marcel and @felipesantos94 in 🇫🇷"));
   figlet("Crypto Export API", {font: "5 Line Oblique"},
@@ -33,15 +32,8 @@ export async function welcome() {
       );
     }
   );
-  console.log(""); // Jump cli line
+  console.log(""); // Jump line
 
-  await initialSetup();
-}
-
-/**
- * @function initialSetup System's entry point. Validating if the user already has a api keychain configuration.
-*/
-async function initialSetup() {
   // Check if user has saved API and/or DB information.
   await sleep(10);
   const spinner = createSpinner("Checking API keys...").start();
@@ -57,24 +49,10 @@ async function initialSetup() {
     // First API key setup
     console.log(chalk.blackBright("This must be your first access. We're going to set everything up within seconds. \nIf the problem persists, contact us.\n"));
     console.log("➤ Creating API keychain...");
+    
+    // Prompt the user for a valid api key
     let apiKey;
-    async function question() {
-      await inquirer.prompt([{
-        name: "apiKey",
-        type: "input",
-        message: "Enter your API key: "
-      }]).then(function (response) {
-        if (typeof response.apiKey !== "string") {
-          console.error("Invalid API Key.");
-          console.info("Please try again.");
-          apiKeyInputHandler();
-        }
-        apiKey = response.apiKey;
-        console.log(""); // Jump cli line
-      });
-    }
-  
-    await question();
+    await prompt.key(apiKey);
   
     // Creating new config.json file in root folder.
     const config = {
@@ -97,39 +75,11 @@ async function initialSetup() {
   }
 };
 
-async function exchangeInput(inputData) {
-  await inquirer.prompt([{
-    type: "list",
-    message: "Exchange:",
-    choices: await getExchanges(),
-    name: "exchanges"
-  }]).then((response) => (inputData.exchange = response.exchanges));
-  console.log(""); // Jump cli line
-}
-
-async function coinInput(inputData) {
-  await inquirer.prompt([{
-    type: "list",
-    message: "Crypto currency:",
-    choices: await getCoins(),
-    name: "coins"
-  }]).then((response) => (inputData.coin = response.coins + "usd"));
-  console.log(""); // Jump cli line
-}
-
-async function dateInput(inputData) {
-  await inquirer.prompt([{
-    type: "list",
-    message: "Date filter:",
-    choices: [
-      "Only before X date",
-      "Only after X date",
-      "Specify time range",
-    ],
-    name: "OHLCoptions"
-  }]).then((response) => (inputData.choice = response.OHLCoptions));
-  console.log(""); // Jump cli line
-
+/**
+ * @function dateRangeInput Prompt the user to select a date range filter.
+ * @param inputData The user inputs saved in memory to be processed by the aplication.
+*/
+async function dateRangeFilter(inputData) {
   if (inputData.choice === "Only before X date" || inputData.choice === "Only after X date") {
     await datePrompt("Date range:").then((response) => {
       inputData.date = parseInt((new Date(response) / 1000).toFixed(0));
@@ -143,14 +93,7 @@ async function dateInput(inputData) {
     } else if (inputData.choice === "Only after X date") {
       inputData.params.after = inputData.date;
     }
-    await inquirer.prompt([{
-      type: "list",
-      message: "Time interval:",
-      choices: [...inputData.periods.keys()],
-      name: "chosePeriods",
-    }]).then((response) => (inputData.params.periods = inputData.periods.get(response.chosePeriods)));
-    console.log(""); // Jump cli line
-  } else {
+  } else if (inputData.choice === "Closing and Opening date range") {
     await datePrompt("Opening date:").then((response) => {
       inputData.params.after = parseInt((new Date(response) / 1000).toFixed(0));
       if (inputData.params.after > (new Date() / 1000).toFixed(0)) {
@@ -160,35 +103,93 @@ async function dateInput(inputData) {
     });
     await datePrompt("Closing date:").then((response) => {
       inputData.params.before = parseInt((new Date(response) / 1000).toFixed(0));
+      if (inputData.params.before > (new Date() / 1000).toFixed(0)) {
+        console.log("Error: Date cannot be greater than today. Please try again\n");
+        process.exit(0);
+      }
     });
-    if (inputData.params.before > (new Date() / 1000).toFixed(0)) {
-      console.log("Error: Date cannot be greater than today. Please try again\n");
-      process.exit(0);
-    } else if (inputData.params.before < inputData.params.after) {
+
+    if (inputData.params.before < inputData.params.after) {
       console.log("Error: Closing date cannot be earlier than opening date. Please try again\n");
       process.exit(0);
     }
+  }
+}
 
+const prompt = {
+  exchange: async function (inputData) { 
+    await inquirer.prompt([{
+      type: "list",
+      message: "Exchange:",
+      choices: await getExchanges(),
+      name: "exchanges"
+    }]).then((response) => {
+      inputData.exchange = response.exchanges;
+      console.log(""); // Jump line
+    })
+  },
+  coin: async function (inputData) { 
+    await inquirer.prompt([{
+      type: "list",
+      message: "Crypto currency:",
+      choices: await getCoins(),
+      name: "coins"
+    }]).then((response) => {
+      inputData.coin = response.coins + "usd";
+      console.log(""); // Jump line
+    })
+  },
+  date: async function (inputData) {
+    await inquirer.prompt([{
+      type: "list",
+      message: "Date filter:",
+      choices: [
+        "Only before X date",
+        "Only after X date",
+        "Closing and Opening date range",
+      ],
+      name: "OHLCoptions"
+    }]).then((response) => {
+      inputData.choice = response.OHLCoptions;
+      console.log(""); // Jump line
+    })
+  },
+  interval: async function (inputData) {
     await inquirer.prompt([{
       type: "list",
       message: "Time interval:",
       choices: [...inputData.periods.keys()],
       name: "chosePeriods"
-    }]).then((response) => (inputData.params.periods = inputData.periods.get(response.chosePeriods)));
+    }]).then((response) => {
+      inputData.params.periods = inputData.periods.get(response.chosePeriods);
+      console.log(""); // Jump line
+    });
+  },
+  export: async function (inputData) {
+    await inquirer.prompt([{
+      type: "list",
+      message: "Select the exported file format:",
+      choices: ["xlsx", "csv"],
+      name: "format"
+    }]).then((response) => (inputData.format = response.format))
+  },
+  apiKey: async function (apiKey) {
+    inquirer.prompt([{
+      name: "apiKey",
+      type: "input",
+      message: "Enter your API key: "
+    }]).then((response) => {
+      if (!response.apiKey || typeof response.apiKey !== "string") {
+        console.error("Invalid API Key.");
+        process.exit(0);
+      }
+      apiKey = response.apiKey;
+    });
   }
 }
 
-async function exportInput(inputData) {
-  await inquirer.prompt([{
-    type: "list",
-    message: "Select the exported file format:",
-    choices: ["xlsx", "csv"],
-    name: "format"
-  }]).then((response) => (inputData.format = response.format));
-}
-
 async function inputHandler() {
-  // Saving User Input. Additional keys added throught Fn.
+  // User inputs in memory to be exported
   let inputData = {
     params: {},
     periods: new Map([
@@ -204,13 +205,23 @@ async function inputHandler() {
     ]),
   };
 
-  // Preparing data from user inputs
-  await exchangeInput(inputData);
-  await coinInput(inputData);
-  await dateInput(inputData);
-  await exportInput(inputData),
+  // Prompt the user to select an exchange type.
+  await prompt.exchange(inputData);
 
-  // Set-Up Data for SheetJS
+  // Prompt the user to select a crypto currency to be exported.
+  await prompt.coin(inputData);
+
+  // Prompt the user to select a date range filter.
+  await prompt.date(inputData);
+  await dateRangeFilter(inputData);
+
+  // Prompt the user to select a time interval for the date range filter.
+  await prompt.interval(inputData);
+
+  // Prompt the user to select a export filter.
+  await prompt.export(inputData);
+
+  // Fetch crypto data from API to be exported
   inputData.cw = await getData(inputData.exchange, inputData.coin, inputData.params);
 
   if (inputData.format === "xlsx") {
