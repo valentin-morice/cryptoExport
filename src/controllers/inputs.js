@@ -16,20 +16,20 @@ const configExists = fs.existsSync("./config.json");
 
 // Initial user application setup
 async function initialSetup() {
-  await sleep(500);
-  const spinner = createSpinner("Checking config.json...").start();
-  await sleep();
+  await sleep(10);
+  const spinner = createSpinner("Checking API keys...").start();
+  await sleep(300);
 
   // Check if user has saved API and/or DB information.
   if (!configExists) {
-    spinner.error({
-      text: 'No "config.json" file found.',
-    });
+    spinner.error();
+    console.warn(chalk.whiteBright.bold("\n  ⚠️  No API keys found.\n"));
     // Input API Key
     const apiKeyInputHandler = async () => {
+      console.log(chalk.blackBright(`This must be your first access. We're going to set everything up within seconds. \nIf the problem persists, contact us.\n`));
+      console.log("➤ Creating API keychain...");
       let apiKey;
       async function question() {
-        console.log(""); // Jump a line
         await inquirer
           .prompt([
             {
@@ -58,9 +58,8 @@ async function initialSetup() {
       };
 
       fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
-        console.log(""); // Jump a line
         if (err) throw new Error("Something went wrong! Error: ", err);
-        console.log("  API key saved");
+        console.log("\n  API key saved");
       });
     };
 
@@ -73,28 +72,22 @@ async function initialSetup() {
 
 async function start() {
   console.clear();
-  // Style CLI Welcome Screen
-  figlet(
-    "Crypto Export API",
-    {
-      font: "Banner",
-    },
+  console.log(chalk.blackBright("Made by @aange-marcel and @felipesantos94 in 🇫🇷"));
+  figlet("Crypto Export API", {font: "5 Line Oblique"},
     (err, data) => {
       if (err) throw new Error(err);
-      console.log(`${gradient.pastel.multiline(data)}\n`);
+      const welcomeText = '  '.repeat(19) + "Export crypto currency technical data into CSV or XLSX files."; // Formatting welcome text padding alignment
       console.log(
-        boxen("Crypto Currency Historical Data Export CLI", {
+        boxen(`${chalk.red.bold(data)} \n\n\n ${welcomeText}`,
+        {
+          title: "Crypto Currency Historical Data Export CLI",
           borderColor: "blackBright",
-          borderStyle: "bold",
+          borderStyle: "double",
+          padding: 1,
+          margin: 1,
+          float: "center"
         })
       );
-      console.log(`
-${chalk.green("Welcome!")} 
-
-This small application is made by Felipe Santos & aange-marcel.
-
-It lets you export crypto price history into a simple CSV / XLSX file. Let's get started ! :)
-      `);
     }
   );
   // -----------------
@@ -105,11 +98,6 @@ async function setParams() {
   let data = {
     params: {},
     periods: new Map([
-      ["1mn", 60],
-      ["3mn", 180],
-      ["5mn", 300],
-      ["15mn", 900],
-      ["30mn", 1800],
       ["1h", 3600],
       ["2h", 7200],
       ["4h", 14400],
