@@ -1,28 +1,39 @@
-import converter from "json-2-csv";
 import fs from "fs";
-import { createSpinner } from "nanospinner";
-import { sleep } from "./inputs.js";
 import * as XLSX from "xlsx";
+import converter from "json-2-csv";
+import { sleep } from "../helpers/misc.js";
+import { createSpinner } from "nanospinner";
 
-async function exportXLSX(param) {
+async function exportExcel(param) {
   const spinner = createSpinner("Creating XLSX...").start();
-  const fileName = "output.xlsx";
-  const ws = XLSX.utils.json_to_sheet(param);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "output");
-  XLSX.writeFile(wb, fileName);
-  await sleep();
-  spinner.success({ text: "XLSX Created" });
-  console.log(""); // Jump a line
+  try {
+    const fileName = "crypto_export.xlsx";
+    const ws = XLSX.utils.json_to_sheet(param);
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "output");
+    XLSX.writeFile(wb, fileName);
+
+    await sleep();
+    spinner.success({ text: "The file was successfully exported to XLSX.\n" });
+  } catch (error) {
+    spinner.error({text: 'Export error!'});
+    throw new Error(error);
+  }
 }
 
-async function exportCSV(param) {
+async function exportCsv(param) {
   const spinner = createSpinner("Creating CSV...").start();
-  const csv = await converter.json2csvAsync(param);
-  fs.writeFileSync("output.csv", csv);
-  await sleep();
-  spinner.success({ text: "CSV Created" });
-  console.log(""); // Jump a line
+  try {
+    const csv = await converter.json2csvAsync(param);
+    fs.writeFileSync("output.csv", csv);
+
+    await sleep();
+    spinner.success({ text: "The file was successfully exported to CSV.\n" });
+  } catch (error) {
+    spinner.error({text: 'Export error!'});
+    throw new Error(error);
+  }
 }
 
-export { exportXLSX, exportCSV };
+export { exportExcel, exportCsv };
