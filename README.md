@@ -15,7 +15,7 @@ On your bash terminal, run the following commands:
 - Clone the repository: _git clone git@github.com:aange-marcel/cryptoExport.git_
 - Access the repository folder: _cd cryptoExport_
 - Install the application's dependencies: _npm install_ 
-- And finally run the program: _node ._
+- And finally run the program: _node ._ (there's really a dot after "node")
 
 ### Created with ❤️ by
 
