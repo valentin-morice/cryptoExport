@@ -1,10 +1,12 @@
 import fs from "fs";
+import util from "util";
 import chalk from "chalk";
 import boxen from "boxen";
 import figlet from "figlet";
 import inquirer from "inquirer";
 import datePrompt from "date-prompt";
-import { sleep } from "../helpers/misc.js"
+import child_process from "child_process";
+import { sleep } from "../helpers/misc.js";
 import { createSpinner } from "nanospinner";
 import { exportExcel, exportCsv } from "./export.js";
 import { getCoins, getExchanges, getData } from "../core/sdk/cw_sdk.js";
@@ -207,29 +209,35 @@ async function inputHandler() {
 
   // Prompt the user to select an exchange type.
   await prompt.exchange(inputData);
-
   // Prompt the user to select a crypto currency to be exported.
   await prompt.coin(inputData);
-
   // Prompt the user to select a date range filter.
   await prompt.date(inputData);
   await dateRangeFilter(inputData);
-
   // Prompt the user to select a time interval for the date range filter.
   await prompt.interval(inputData);
-
   // Prompt the user to select a export filter.
   await prompt.export(inputData);
 
   // Fetch crypto data from API to be exported
   inputData.cw = await getData(inputData.exchange, inputData.coin, inputData.params);
-
+  
+  let file;
   if (inputData.format === "xlsx") {
-    await exportExcel(inputData.cw[inputData.params.periods]);
+    file = await exportExcel(inputData.cw[inputData.params.periods], coin, "xlsx");
   } else if (inputData.format === "csv") {
-    await exportCsv(inputData.cw[inputData.params.periods]);
+    file = await exportCsv(inputData.cw[inputData.params.periods], coin, "csv");
   } else {
     console.error("Invalid file format");
     process.exit(0);
+  }
+
+  if (file) {
+    const exec = util.promisify(child_process.exec);
+    try {
+      await exec(`open ./${file}`);
+    } catch (err) {
+       console.error(err);
+    };
   }
 }
