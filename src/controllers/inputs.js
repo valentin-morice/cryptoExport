@@ -6,7 +6,7 @@ import figlet from "figlet";
 import inquirer from "inquirer";
 import datePrompt from "date-prompt";
 import child_process from "child_process";
-import { sleep } from "../helpers/misc.js";
+import { sleep, apiError } from "../helpers/misc.js";
 import { readFile } from "fs/promises";
 import { createSpinner } from "nanospinner";
 import { exportExcel, exportCsv } from "./export.js";
@@ -21,7 +21,7 @@ export async function startProgram() {
   console.log(chalk.blackBright("Made by @aange-marcel and @felipesantos94 in 🇫🇷"));
   figlet("Crypto Export API", {font: "5 Line Oblique"},
     (err, data) => {
-      if (err) throw new Error(err);
+      if (err) await apiError("Something went wrong!", err);
       const welcomeText = '  '.repeat(19) + "Export crypto currency technical data into CSV or XLSX files."; // Formatting welcome text padding alignment
       console.log(
         boxen(`${chalk.red.bold(data)} \n\n\n ${welcomeText}`,
@@ -51,7 +51,7 @@ export async function startProgram() {
     
     if (config.length === 0) {
       fs.writeFile("./config.json", JSON.stringify({}, null, 2), (err) => {
-        if (err) throw new Error("Something went wrong! Error: ", err);
+        if (err) await apiError("Something went wrong!", err);
       });
       config = await readFile(new URL("../../config.json", import.meta.url));
     }
@@ -93,7 +93,7 @@ async function setupApiKey() {
   };
 
   fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
-    if (err) throw new Error("Something went wrong! Error: ", err);
+    if (err) await apiError("Something went wrong!", err);
   });
 
   const checkConfig = fs.existsSync("./config.json");
@@ -115,8 +115,7 @@ async function dateRangeFilter(inputData) {
     await datePrompt("Date range:").then((response) => {
       inputData.date = parseInt((new Date(response) / 1000).toFixed(0));
       if (inputData.date > (new Date() / 1000).toFixed(0)) {
-        console.log("Error: Date cannot be greater than today. Please try again");
-        process.exit(0);
+        await apiError("Date cannot be greater than today. Please try again", err);
       }
     });
     if (inputData.choice === "Only before X date") {
@@ -128,21 +127,18 @@ async function dateRangeFilter(inputData) {
     await datePrompt("Opening date:").then((response) => {
       inputData.params.after = parseInt((new Date(response) / 1000).toFixed(0));
       if (inputData.params.after > (new Date() / 1000).toFixed(0)) {
-        console.log("Error: Date cannot be greater than today. Please try again\n");
-        process.exit(0);
+        await apiError("Date cannot be greater than today. Please try again", err);
       }
     });
     await datePrompt("Closing date:").then((response) => {
       inputData.params.before = parseInt((new Date(response) / 1000).toFixed(0));
       if (inputData.params.before > (new Date() / 1000).toFixed(0)) {
-        console.log("Error: Date cannot be greater than today. Please try again\n");
-        process.exit(0);
+        await apiError("Date cannot be greater than today. Please try again", err);
       }
     });
 
     if (inputData.params.before < inputData.params.after) {
-      console.log("Error: Closing date cannot be earlier than opening date. Please try again\n");
-      process.exit(0);
+      await apiError("Closing date cannot be earlier than opening date. Please try again", err);
     }
   }
 }
@@ -240,8 +236,7 @@ async function inputHandler(apiKeys) {
     assetsLoad.success({text: chalk.green("Assets loaded successfully!")});
   } catch (error) {
     assetsLoad.error();
-    console.error("Could not load exchanges and/or coins.");
-    throw new Error(error);
+    await apiError("Could not load exchanges and/or coins.", err);
   }
 
   // Prompt the user to select an exchange type.
@@ -265,8 +260,7 @@ async function inputHandler(apiKeys) {
   } else if (inputData.format === "csv") {
     file = await exportCsv(inputData.cw[inputData.params.periods], inputData.coin, "csv");
   } else {
-    console.error("Invalid file format");
-    process.exit(0);
+    await apiError("Invalid file format", err);
   }
 
   if (file) {
@@ -274,7 +268,7 @@ async function inputHandler(apiKeys) {
     try {
       await exec(`open ./${file}`);
     } catch (err) {
-       console.error(err);
+      await apiError(`Could not open the exported ${inputData.format} file!`, err);
     };
   }
 }
