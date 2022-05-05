@@ -11,7 +11,7 @@ const now = `${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 async function exportExcel(data, coin, type) {
   const spinner = createSpinner("Creating XLSX...").start();
   try {
-    const fileName = `${coin}_export_${today} ${now}.${type}`;
+    const fileName = `${coin}_export_${today}_${now}.${type}`;
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
 
@@ -30,7 +30,7 @@ async function exportExcel(data, coin, type) {
 async function exportCsv(data, coin, type) {
   const spinner = createSpinner("Creating CSV...").start();
   try {
-    const fileName = `${coin}_export_${today} ${now}.${type}`;
+    const fileName = `${coin}_export_${today}_${now}.${type}`;
     const csv = await converter.json2csvAsync(data);
     fs.writeFileSync(fileName, csv);
 
