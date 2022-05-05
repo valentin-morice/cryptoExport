@@ -54,7 +54,7 @@ export async function startProgram() {
     
     // Prompt the user for a valid api key
     let apiKey;
-    await prompt.key(apiKey);
+    await prompts.key(apiKey);
   
     // Creating new config.json file in root folder.
     const config = {
@@ -118,7 +118,7 @@ async function dateRangeFilter(inputData) {
   }
 }
 
-const prompt = {
+const prompts = {
   exchange: async function (inputData) { 
     await inquirer.prompt([{
       type: "list",
@@ -208,25 +208,25 @@ async function inputHandler() {
   };
 
   // Prompt the user to select an exchange type.
-  await prompt.exchange(inputData);
+  await prompts.exchange(inputData);
   // Prompt the user to select a crypto currency to be exported.
-  await prompt.coin(inputData);
+  await prompts.coin(inputData);
   // Prompt the user to select a date range filter.
-  await prompt.date(inputData);
+  await prompts.date(inputData);
   await dateRangeFilter(inputData);
   // Prompt the user to select a time interval for the date range filter.
-  await prompt.interval(inputData);
+  await prompts.interval(inputData);
   // Prompt the user to select a export filter.
-  await prompt.export(inputData);
-
+  await prompts.export(inputData);
+  
   // Fetch crypto data from API to be exported
   inputData.cw = await getData(inputData.exchange, inputData.coin, inputData.params);
   
   let file;
   if (inputData.format === "xlsx") {
-    file = await exportExcel(inputData.cw[inputData.params.periods], coin, "xlsx");
+    file = await exportExcel(inputData.cw[inputData.params.periods], inputData.coin, "xlsx");
   } else if (inputData.format === "csv") {
-    file = await exportCsv(inputData.cw[inputData.params.periods], coin, "csv");
+    file = await exportCsv(inputData.cw[inputData.params.periods], inputData.coin, "csv");
   } else {
     console.error("Invalid file format");
     process.exit(0);
