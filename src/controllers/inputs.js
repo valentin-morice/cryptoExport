@@ -10,7 +10,7 @@ import { sleep, apiError } from "../helpers/misc.js";
 import { readFile } from "fs/promises";
 import { createSpinner } from "nanospinner";
 import { exportExcel, exportCsv } from "./export.js";
-import { getCoins, getExchanges, getData } from "../core/sdk/cw_sdk.js";
+import { getCoins, getExchanges, getData } from "../core/sdk/cw-sdk.js";
 import { isNotEmptyObject } from "../helpers/validations.js";
 
 /**
