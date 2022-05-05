@@ -7,9 +7,11 @@ import inquirer from "inquirer";
 import datePrompt from "date-prompt";
 import child_process from "child_process";
 import { sleep } from "../helpers/misc.js";
+import { readFile } from "fs/promises";
 import { createSpinner } from "nanospinner";
 import { exportExcel, exportCsv } from "./export.js";
 import { getCoins, getExchanges, getData } from "../core/sdk/cw_sdk.js";
+import { isNotEmptyObject } from "../helpers/validations.js";
 
 /**
  * @function startProgram System's entry point. Validating if the user already has a api keychain configuration.
@@ -38,44 +40,71 @@ export async function startProgram() {
 
   // Check if user has saved API and/or DB information.
   await sleep(10);
-  const spinner = createSpinner("Checking API keys...").start();
+  const spinner = createSpinner("Getting ready initial configurations...").start();
   
+  let config;
   const configExists = fs.existsSync("./config.json");
   if (configExists) {
-    spinner.success({ text: "API keychain found.\n" });
-    await inputHandler();
+    spinner.success({text: "Configurations loaded successfully.\n"});
+    spinner.start({text: "Checking API keys..."});
+    config = await readFile(new URL("../../config.json", import.meta.url));
+    
+    if (config.length === 0) {
+      fs.writeFile("./config.json", JSON.stringify({}, null, 2), (err) => {
+        if (err) throw new Error("Something went wrong! Error: ", err);
+      });
+      config = await readFile(new URL("../../config.json", import.meta.url));
+    }
+    
+    config = JSON.parse(config);
+    if (!isNotEmptyObject(config) || !config.apiKeys) {
+      spinner.error();
+      console.warn(chalk.whiteBright.bold("\n  ⚠️  No API keys found.\n"));
+      config = await setupApiKey();
+    } else {
+      spinner.success({text: chalk.green("API keychain found.\n")});
+    }
+    await inputHandler(config);
   } else {
     spinner.error();
-    console.warn(chalk.whiteBright.bold("\n  ⚠️  No API key found.\n"));
-
-    // First API key setup
-    console.log(chalk.blackBright("This must be your first access. We're going to set everything up within seconds. \nIf the problem persists, contact us.\n"));
-    console.log("➤ Creating API keychain...");
-    
-    // Prompt the user for a valid api key
-    let apiKey;
-    await prompts.key(apiKey);
-  
-    // Creating new config.json file in root folder.
-    const config = {
-      apiKeys: {
-        cryptoWatch: apiKey
-      }
-    };
-  
-    fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
-      if (err) throw new Error("Something went wrong! Error: ", err);
-      console.log("\n  API key saved\n");
-    });
-
-    const checkConfig = fs.existsSync("./config.json");
-    if (checkConfig) {
-      await inputHandler();
-    } else {
-      throw new Error("Could not create config file");
-    }
+    console.warn(chalk.whiteBright.bold("\n  ⚠️  No API keys found.\n"));
+    config = await setupApiKey();
   }
+
+  await inputHandler(config);
 };
+
+/**
+ * @function setupApiKey Prompt the user to insert their API key and handles the config.json creation.
+*/
+async function setupApiKey() {
+  // First API key setup
+  console.log("Looks like the API keychain is empty. Let's set everything up.")
+  console.log(chalk.blackBright("If the problem persists, please contact us at: https://github.com/aange-marcel/cryptoExport/issues/new.\n"));
+  
+  // Prompt the user for a valid api key
+  const apiKey = await prompts.apiKey();
+
+  // Creating new config.json file in root folder.
+  const config = {
+    apiKeys: {
+      cryptoWatch: apiKey
+    }
+  };
+
+  fs.writeFile("./config.json", JSON.stringify(config, null, 2), (err) => {
+    if (err) throw new Error("Something went wrong! Error: ", err);
+  });
+
+  const checkConfig = fs.existsSync("./config.json");
+  if (checkConfig) {
+    await sleep(10);
+    createSpinner(chalk.green("API keychain created and key saved successfully.\n")).success();
+    return config;
+  } else {
+    throw new Error("Could not create config file");
+  }
+}
 
 /**
  * @function dateRangeInput Prompt the user to select a date range filter.
@@ -123,7 +152,7 @@ const prompts = {
     await inquirer.prompt([{
       type: "list",
       message: "Exchange:",
-      choices: await getExchanges(),
+      choices: inputData.exchanges,
       name: "exchanges"
     }]).then((response) => {
       inputData.exchange = response.exchanges;
@@ -134,7 +163,7 @@ const prompts = {
     await inquirer.prompt([{
       type: "list",
       message: "Crypto currency:",
-      choices: await getCoins(),
+      choices: inputData.coins,
       name: "coins"
     }]).then((response) => {
       inputData.coin = response.coins + "usd";
@@ -175,22 +204,18 @@ const prompts = {
       name: "format"
     }]).then((response) => (inputData.format = response.format))
   },
-  apiKey: async function (apiKey) {
-    inquirer.prompt([{
-      name: "apiKey",
+  apiKey: async function () {
+    let apiKey;
+    await inquirer.prompt([{
       type: "input",
-      message: "Enter your API key: "
-    }]).then((response) => {
-      if (!response.apiKey || typeof response.apiKey !== "string") {
-        console.error("Invalid API Key.");
-        process.exit(0);
-      }
-      apiKey = response.apiKey;
-    });
+      message: "Please, enter your API key: ",
+      name: "apiKey",
+    }]).then((response) => (apiKey = response.apiKey));
+    return apiKey;
   }
 }
 
-async function inputHandler() {
+async function inputHandler(apiKeys) {
   // User inputs in memory to be exported
   let inputData = {
     params: {},
@@ -204,8 +229,20 @@ async function inputHandler() {
       ["3 days", 259200],
       ["1 week", 604800],
       ["1 week, start Monday", "604800_Monday"],
-    ]),
+    ])
   };
+
+  // await sleep(10);
+  const assetsLoad = createSpinner("Loading cryptocurrency assets...").start();
+  try {
+    inputData["coins"] = await getCoins(apiKeys);
+    inputData["exchanges"] = await getExchanges(apiKeys);
+    assetsLoad.success({text: chalk.green("Assets loaded successfully!")});
+  } catch (error) {
+    assetsLoad.error();
+    console.error("Could not load exchanges and/or coins.");
+    throw new Error(error);
+  }
 
   // Prompt the user to select an exchange type.
   await prompts.exchange(inputData);
@@ -220,7 +257,7 @@ async function inputHandler() {
   await prompts.export(inputData);
   
   // Fetch crypto data from API to be exported
-  inputData.cw = await getData(inputData.exchange, inputData.coin, inputData.params);
+  inputData.cw = await getData(inputData.exchange, inputData.coin, inputData.params, apiKeys);
   
   let file;
   if (inputData.format === "xlsx") {
