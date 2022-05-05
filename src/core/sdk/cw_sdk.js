@@ -1,17 +1,10 @@
 import { RESTClient } from "cw-sdk-node";
-import { readFile } from "fs/promises";
 import CoinGecko from "coingecko-api";
-
 const coingeckoClient = new CoinGecko();
-const config = JSON.parse(
-  await readFile(new URL("../../../config.json", import.meta.url))
-);
 
-async function getExchanges() {
+async function getExchanges(apiKeys) {
   const client = new RESTClient({
-    creds: {
-      apiKey: config.apiKeys.cryptoWatch,
-    },
+    creds: { apiKey: apiKeys.cryptoWatch }
   });
   const exchanges = await client.getExchanges();
   let exchangesArr = [];
@@ -35,14 +28,11 @@ async function getCoins() {
   return coinsArr;
 }
 
-async function getData(param, param1, param2) {
+async function getData(exchange, coin, params, apiKeys) {
   const client = new RESTClient({
-    creds: {
-      apiKey: config.apiKeys.cryptoWatch,
-    },
+    creds: { apiKey: apiKeys.cryptoWatch }
   });
-  const data = await client.getOHLC(param, param1, param2);
-  return data;
+  return await client.getOHLC(exchange, coin, params);
 }
 
 export { getExchanges, getCoins, getData };
