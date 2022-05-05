@@ -3,11 +3,11 @@ import { readFile } from "fs/promises";
 import CoinGecko from "coingecko-api";
 
 const coingeckoClient = new CoinGecko();
+const config = JSON.parse(
+  await readFile(new URL("../../../config.json", import.meta.url))
+);
 
 async function getExchanges() {
-  const config = JSON.parse(
-    await readFile(new URL("../../../config.json", import.meta.url))
-  );
   const client = new RESTClient({
     creds: {
       apiKey: config.apiKeys.cryptoWatch,
@@ -16,7 +16,9 @@ async function getExchanges() {
   const exchanges = await client.getExchanges();
   let exchangesArr = [];
   for (let i = 0; i < exchanges.length; i++) {
-    exchangesArr.push(exchanges[i].symbol);
+    if (exchanges[i].active === true) {
+      exchangesArr.push(exchanges[i].symbol);
+    }
   }
   return exchangesArr.sort();
 }
@@ -34,9 +36,6 @@ async function getCoins() {
 }
 
 async function getData(param, param1, param2) {
-  const config = JSON.parse(
-    await readFile(new URL("../../../config.json", import.meta.url))
-  );
   const client = new RESTClient({
     creds: {
       apiKey: config.apiKeys.cryptoWatch,
