@@ -1,4 +1,5 @@
 import { RESTClient } from "cw-sdk-node";
+import { apiError } from "../helpers/misc.js";
 import CoinGecko from "coingecko-api";
 const coingeckoClient = new CoinGecko();
 
@@ -29,10 +30,14 @@ async function getCoins() {
 }
 
 async function getData(exchange, coin, params, apiKeys) {
-  const client = new RESTClient({
-    creds: { apiKey: apiKeys.cryptoWatch }
-  });
-  return await client.getOHLC(exchange, coin, params);
+  try {
+    const client = new RESTClient({
+      creds: { apiKey: apiKeys.cryptoWatch }
+    });
+    return await client.getOHLC(exchange, coin, params);
+  } catch (err) {
+    apiError("Something went wrong!", err);
+  }
 }
 
 export { getExchanges, getCoins, getData };

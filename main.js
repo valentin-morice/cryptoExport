@@ -1,3 +1,3 @@
-import { startProgram } from "./src/controllers/inputs.js";
+import { initialSetup } from "./src/core/input-handlers.js";
 
-await startProgram();
+await initialSetup();
