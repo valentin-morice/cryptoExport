@@ -20,4 +20,4 @@ On your bash terminal, run the following commands:
 ### Created with ❤️ by
 
 - felipesantos94
-- aange-marcel
+- valentin-morice
