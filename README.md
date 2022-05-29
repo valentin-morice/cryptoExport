@@ -1,5 +1,7 @@
 # Crypto Export API
 
+![screenshot](https://ibb.co/mz1vvVZ)
+
 ## Export Crypto Data into CSV / XLSX
 
 Crypto Export is a simple CLI application that allows you to export crypto price history into a simple spreadsheet.
