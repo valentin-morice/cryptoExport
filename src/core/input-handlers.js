@@ -18,7 +18,7 @@ import { exchange, coin, date, interval, exportFile, apiKey } from "./prompts.js
 */
 export async function initialSetup() {
   console.clear();
-  console.log(chalk.blackBright("Made by @aange-marcel and @felipesantos94 in 🇫🇷"));
+  console.log(chalk.blackBright("Made by @valentin-morice and @felipesantos94 in 🇫🇷"));
   figlet("Crypto Export API", { font: "5 Line Oblique" },
     (err, data) => {
       if (err) apiError("Something went wrong!", err);
@@ -78,7 +78,7 @@ export async function initialSetup() {
 async function setupApiKey() {
   // First API key setup
   console.log("Looks like the API keychain is empty. Let's set everything up.")
-  console.log(chalk.blackBright("If the problem persists, please contact us at: https://github.com/aange-marcel/cryptoExport/issues/new.\n"));
+  console.log(chalk.blackBright("If the problem persists, please contact us at: https://github.com/valentin-morice/cryptoExport/issues/new.\n"));
   
   // Prompt the user for a valid api key
   const key = await apiKey();
