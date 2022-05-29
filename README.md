@@ -12,7 +12,7 @@ Crypto Export is a simple CLI application that allows you to export crypto price
 ### How to run
 
 On your bash terminal, run the following commands:
-- Clone the repository: _git clone git@github.com:aange-marcel/cryptoExport.git_
+- Clone the repository: _git clone git@github.com:valentin-morice/cryptoExport.git_
 - Access the repository folder: _cd cryptoExport_
 - Install the application's dependencies: _npm install_ 
 - And finally run the program: _node ._ (there's really a dot after "node")
